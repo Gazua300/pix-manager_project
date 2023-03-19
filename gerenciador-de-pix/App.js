@@ -6,7 +6,7 @@ import { Provider } from "./src/global/Context"
 import Login from './src/pages/Login/Login'
 import Home from './src/pages/Home/Home'
 import Products from "./src/pages/Products/Products"
-// import Cart from "./src/pages/Cart/Cart"
+import PixDetail from "./src/pages/PixDetail/PixDetail"
 import Charges from "./src/pages/Charges/Charges"
 import CobDetail from "./src/pages/CobDetail/CobDetail"
 import PixSent from "./src/pages/PixSent/PixSent"
@@ -28,7 +28,7 @@ function MyDrawer(){
       drawerContent={props => <CustomDrawer {...props}/>}
       screenOptions={{
         drawerStyle: {
-          width: '50%'
+          width: '70%'
         }
       }}>
 
@@ -40,9 +40,9 @@ function MyDrawer(){
         name="Produtos"
         component={Products}/>
       
-      {/* <Drawer.Screen
-        name="Carrinho"
-        component={Cart}/> */}
+      <Drawer.Screen
+        name="Detalhes do Pix"
+        component={PixDetail}/>
 
       <Drawer.Screen
         name="Charges"

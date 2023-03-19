@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "496511194230",
+    "project_id": "loja-online-4fc22",
+    "storage_bucket": "loja-online-4fc22.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496511194230:android:e54e2af85eeffea1f8fb57",
+        "android_client_info": {
+          "package_name": "com.gazua300.pixmanageruser"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496511194230-cgehbjjma9pb6nk3o1jsvcmrpidcr60o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCziBXewKKfI_UCQi-BoCkADZNnCM7Nk9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496511194230-cgehbjjma9pb6nk3o1jsvcmrpidcr60o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

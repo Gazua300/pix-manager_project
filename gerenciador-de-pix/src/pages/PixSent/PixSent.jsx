@@ -1,9 +1,7 @@
-import { useEffect, useState, useContext } from 'react'
+import { useState, useContext } from 'react'
 import Context from '../../global/Context'
 import axios from 'axios'
 import { url } from '../../constants/url'
-import { convertDate } from '../../utils/ConvertDate'
-import { convertHour } from '../../utils/ConvertDate'
 import { TextInputMask } from 'react-native-masked-text'
 import {
     View,
@@ -21,7 +19,7 @@ export default function PixSent(props){
     const [fim, setFim] = useState('')
     const [pix, setPix] = useState([])
     const [total, setTotal] = useState('')
-
+    
 
 
     
@@ -31,19 +29,19 @@ export default function PixSent(props){
             fim
         }
         axios.post(`${url}/pixsent`, body).then(res=>{
-            console.log(res.data.pix)
+            setPix(res.data.pix)
         }).catch(e=>{
-            console.log(e.response.data)
+            alert(e.response.data)
         })
 
         valorTotal()
     }
-
+    
 
     const valorTotal = ()=>{
         if(pix.length > 0){
             const valores = pix.map(cob=>{
-                return Number(cob.valor.original)
+                return Number(cob.valor)
             })
         
             const resultado = valores.reduce((accumulator, value)=>{
@@ -80,20 +78,26 @@ export default function PixSent(props){
                 <Button title='Gerar lista' onPress={consultarPixEnviados}/>
                 <Button title='limpar' onPress={limpar}/>
             </View>
-            <Text style={{textAlign:'center', fontWeight:'bold', fontSize:18}}>
-                Total: R$ {total}
-            </Text>
+            {pix.length > 0 ? (
+                <View style={{alignItems:'center', marginBottom:10}}>
+                    <Button title='gerar total' onPress={valorTotal}/>
+                </View>
+            ) : null}
+            {total ? (
+                <Text style={{textAlign:'center', fontWeight:'bold', fontSize:18}}>
+                    Total: R$ {total}
+                </Text>
+            ) : null}
             <FlatList
                 data={pix}
-                keyExtractor={pix => pix.txid}
-                renderItem={({item: pix})=>(
+                keyExtractor={pix => pix.endToEndId}
+                renderItem={({item: pix})=>(                    
                     <TouchableOpacity style={styles.card}>
                         <Text style={styles.listFontStyle}>
-                            Valor: R$ {pix.valor.original}
+                            Favorecido: {pix.favorecido.identificacao.nome}
                         </Text>
                         <Text style={styles.listFontStyle}>
-                            Cobrança efetuada em: {convertDate(pix.loc.criacao)}{' '}
-                            às {convertHour(pix.loc.criacao)}
+                            Valor: R$ {pix.valor}
                         </Text>
                     </TouchableOpacity>
                 )}/>

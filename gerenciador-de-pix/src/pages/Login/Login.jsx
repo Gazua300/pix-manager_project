@@ -1,24 +1,21 @@
-import { useState, useEffect, useContext } from 'react'
-import Context from '../../global/Context'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { 
     View,
-    Text,
     TextInput,
     Button,
     StyleSheet,
     BackHandler,
-    TouchableOpacity
  } from 'react-native'
 
 
 
-export default function Login(props){    
-    const { setters } = useContext(Context)
+export default function Login(props){   
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
+    
 
 
 

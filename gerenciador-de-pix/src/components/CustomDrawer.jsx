@@ -116,7 +116,7 @@ export default function CustomDrawer(props){
                         ) : null}
                         
                     </TouchableOpacity>
-                    <Text style={{fontSize:20, margin:10, color:'gray'}}>Pix Manager</Text>
+                    <Text style={{fontSize:20, margin:10, color:'gray'}}>Gerenciador de Pix</Text>
                 </View>
                 {mode ? (
                     <TouchableOpacity onPress={salvarImagem}

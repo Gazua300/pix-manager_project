@@ -73,7 +73,7 @@ export default function CustomDrawer(props){
         }).post(`${url}/user/image/${id}`, formData).then(res=>{
             console.log(res.data)
         }).catch(e=>{
-            alert(e)
+            console.log(e)
         })
     }
 
@@ -116,7 +116,7 @@ export default function CustomDrawer(props){
                         ) : null}
                         
                     </TouchableOpacity>
-                    <Text style={{fontSize:20, margin:10, color:'gray'}}>Pix Manager</Text>
+                    <Text style={{fontSize:20, margin:10, color:'gray'}}>Loja Online</Text>
                 </View>
                 {mode ? (
                     <TouchableOpacity onPress={salvarImagem}

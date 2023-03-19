@@ -27,9 +27,10 @@ function MyDrawer(){
       drawerContent={props => <CustomDrawer {...props}/>}
       screenOptions={{
         drawerStyle: {
-          width: '50%'
+          width: '70%'
         }
-      }}>      
+      }}
+      >      
 
       <Drawer.Screen
         name="Home"

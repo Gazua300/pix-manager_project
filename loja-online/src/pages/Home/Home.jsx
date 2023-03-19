@@ -1,49 +1,95 @@
 import { useState, useContext } from 'react'
 import Context from '../../global/Context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as LocalAuthentication from 'expo-local-authentication'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import * as Clipboard from 'expo-clipboard'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { View, Text, Image, StyleSheet, TouchableOpacity, Button } from 'react-native'
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    Button,
+    Alert,
+    Modal,
+    Switch
+} from 'react-native'
 
 
 
 
 export default function Home(props){
-    const { states } = useContext(Context)
+    const { states, requests } = useContext(Context)
     const [qrcodeImage, setQrcodeImage] = useState('')
     const [copyAndPaste, setCopyAndPaste] = useState('')
     const total = states.total
     const [mode, setMode] = useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const [selecionado, setSelecionado] = useState(false)
+    
+console.log({showModal, selecionado})
 
+    const gerarQrCode = async()=>{
+        const result = await LocalAuthentication.authenticateAsync()
 
-
-
-    const getQrCode = async()=>{
-        const date = new Date()
-        const options = { timeZone: 'UTC' }
-        const body = {
-            valor: total.toFixed(2),
-            criacao: `${date.toLocaleDateString('pt-BR', options)} às ${date.toLocaleTimeString()}`, 
-            userId: await AsyncStorage.getItem('id')
+        if(result.success){
+            const date = new Date()
+            const options = { timeZone: 'UTC' }
+            const body = {
+                valor: total.toFixed(2),
+                criacao: `${date.toLocaleDateString('pt-BR', options)} às ${date.toLocaleTimeString()}`, 
+                userId: await AsyncStorage.getItem('id')
+            }
+            axios.post(`${url}/qrcode`, body).then(res=>{
+                setQrcodeImage(res.data.qrCode.imagemQrcode)
+                setCopyAndPaste(res.data.qrCode.qrcode)
+                notificar()
+            }).catch(e=>{
+                alert(e)
+            })
         }
-        axios.post(`${url}/qrcode`, body).then(res=>{
-            setQrcodeImage(res.data.qrCode.imagemQrcode)
-            setCopyAndPaste(res.data.qrCode.qrcode)
-            notificar()
-        }).catch(e=>{
-            alert(e)
-        })
     }
 
 
-    const gerarQrcode = ()=>{
+    const verificarBloqueioDeTela = async()=>{
+        const hasHardware = await LocalAuthentication.hasHardwareAsync()
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync()
+        requests.atualizarToken()
+        
+        if(hasHardware && isEnrolled){
+            const result = await LocalAuthentication.authenticateAsync()
+
+            if(result.success){
+                gerarQrCode()
+            }            
+        }else{
+            selecionado ? gerarQrCode() : setShowModal(true)
+            // Alert.alert(
+            //     'Por motivos de segurança ative o bloqueio de tela!',
+            //     'Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.',
+            //     [
+            //         {
+            //             text:'Cancelar'
+            //         },
+            //         {
+            //             text:'Ok',
+            //             onPress: ()=> gerarQrCode()
+            //         }
+            //     ]
+            // )
+        }
+    }
+
+
+    const verificarValorQrCode = ()=>{
         if(total === ''){
             alert('Necessário solicitar um produto para gerar uma cobranças')
             props.navigation.navigate('Produtos')
         }else{
-            getQrCode()
+            verificarBloqueioDeTela()
         }
     }
     
@@ -68,7 +114,7 @@ export default function Home(props){
         axios.post(`${url}/notification/${id}`, body).then(res=>{
             console.log(res.data)
         }).catch(e=>{
-            alert(e.response.data)
+            console.log(e.response.data)
         })
     }
 
@@ -76,7 +122,7 @@ export default function Home(props){
     return(
         <View style={styles.container}>
             <View style={{marginTop:'25%'}}>
-                <Button title='gerar qrcode' onPress={gerarQrcode}/>
+                <Button title='gerar qrcode' onPress={verificarValorQrCode}/>
             </View>
             <Text style={{fontSize:20, margin:10}}>
                 Total à pagar: R$ {total ?  total.toFixed(2) : null}
@@ -90,6 +136,63 @@ export default function Home(props){
                     Copiado ✔️
                 </Text>
             ) : null}
+
+            
+            {!selecionado ? (
+                <Modal
+                    animationType='slide'
+                    visible={showModal}
+                    transparent={true}
+                    onRequestClose={()=> setShowModal(false)}>
+                    <View style={{
+                        flex:1,
+                        alignItems:'center',
+                        justifyContent:'center',
+                        backgroundColor:'rgba(0, 0, 0, 0.5)'
+                        }}>
+                        <View style={{ backgroundColor:'white', width:'80%', height:'40%', padding:20 }}>
+                            <Text style={{fontSize:17, fontWeight:'bold'}}>
+                                Por motivos de segurança ative o bloqueio de tela!
+                            </Text>
+                            <Text style={{fontSize:15, marginVertical:20}}>
+                                Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.
+                            </Text>
+
+                            <View style={{flexDirection:'row', alignItems:'center'}}>
+                                <Switch onValueChange={setSelecionado} value={selecionado}/>
+                                <Text>
+                                    Não mostrar{'\n'}mais essa mensagem
+                                </Text>
+                            </View>
+                            
+                            <View style={{
+                                marginTop:'10%',
+                                marginLeft:90,
+                                flexDirection:'row',
+                                alignItems:'center'
+                                }}>
+                                <TouchableOpacity onPress={()=> setShowModal(false)}>
+                                    <Text style={{color:'blue', fontSize:18, marginLeft:50}}>
+                                        Cancelar
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={()=>{ 
+                                    setShowModal(false)
+                                    gerarQrCode()
+                                }}>
+                                    <Text style={{color:'blue', fontSize:18, marginLeft:50}}>
+                                        Ok
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            ) : null}
+
+
+
+
             <TouchableOpacity style={styles.cpStyle}
                 onPress={copyToCliboard}>
                 {copyAndPaste ? (

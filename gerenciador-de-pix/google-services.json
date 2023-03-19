@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "739759448895",
+    "project_id": "gerenciador-de-pix",
+    "storage_bucket": "gerenciador-de-pix.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739759448895:android:c403c6d055a8a494b2e98a",
+        "android_client_info": {
+          "package_name": "com.gazua300.gerenciadordepix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "739759448895-m30m9lch0t49dqqjbdpa03t3l9ao1nm7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs9gG9wAA7d4ii-ogEsDLgdoEM4WH16kQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "739759448895-m30m9lch0t49dqqjbdpa03t3l9ao1nm7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

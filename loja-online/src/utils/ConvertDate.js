@@ -12,3 +12,8 @@ export const convertHour = (time)=>{
     
     return hour
 }
+
+
+export const convertTimeAndDate = (momen)=>{
+    
+}

@@ -31,7 +31,7 @@ export default function PixSent(props){
             fim
         }
         axios.post(`${url}/pixsent`, body).then(res=>{
-            console.log(res.data.pix)
+            setPix(res.data.pix)
         }).catch(e=>{
             console.log(e.response.data)
         })
@@ -89,11 +89,10 @@ export default function PixSent(props){
                 renderItem={({item: pix})=>(
                     <TouchableOpacity style={styles.card}>
                         <Text style={styles.listFontStyle}>
-                            Valor: R$ {pix.valor.original}
+                            Valor: R$ {pix.valor}
                         </Text>
                         <Text style={styles.listFontStyle}>
-                            Cobrança efetuada em: {convertDate(pix.loc.criacao)}{' '}
-                            às {convertHour(pix.loc.criacao)}
+                            Horário: {pix.horario}
                         </Text>
                     </TouchableOpacity>
                 )}/>

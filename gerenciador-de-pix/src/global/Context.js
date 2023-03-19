@@ -1,6 +1,7 @@
 import { useState, createContext, useEffect } from "react"
 import * as Notifications from 'expo-notifications'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as LocalAuthentication from 'expo-local-authentication'
 import axios from 'axios'
 import { url } from "../constants/url"
 
@@ -23,32 +24,20 @@ export const Provider = (props)=>{
 
 console.log('Token do cliente: ', expoPushToken)
 
-
+    
     useEffect(()=>{
         registerForNotifications().then(async(token)=>{
             setExpoPushToken(token)
         })
     }, [])
 
-    useEffect(()=>{
-        (async()=>{
-            const id = await AsyncStorage.getItem('id')
-            if(expoPushToken){
-                const body = {
-                    expoPushToken
-                }            
-                axios.patch(`${url}/client/pushtoken/${id}`, body).then(res=>{
-                    console.log(res.data)
-                }).catch(e=>{
-                    console.log(e.response.data)
-                })
-            }else{
-                console.log('ExpoPushToken está null')
-            }
-        })()        
+    useEffect(()=>{            
+        if(expoPushToken){
+            atualizarToken()
+        }        
     }, [])
 
-
+    
     const registerForNotifications = async()=>{
         let token
         const { status: existingStatus } = await Notifications.getPermissionsAsync()
@@ -69,6 +58,21 @@ console.log('Token do cliente: ', expoPushToken)
     }
 
 
+    const atualizarToken = async()=>{
+        const id = await AsyncStorage.getItem('id')
+
+        const body = {
+            expoPushToken
+        }            
+        axios.patch(`${url}/client/pushtoken/${id}`, body).then(res=>{
+            console.log(res.data)
+        }).catch(e=>{
+            console.log(e.response.data)
+        })
+    }
+    
+
+
     const scheduleNotification = async(title, body, fct)=>{
         await Notifications.scheduleNotificationAsync({
             content: {
@@ -84,7 +88,7 @@ console.log('Token do cliente: ', expoPushToken)
 
     states = { cob, total }
     setters = { setCob, setTotal }
-    requests = { scheduleNotification }
+    requests = { scheduleNotification, atualizarToken }
 
     return(
         <Context.Provider value={{states, setters, requests}}>

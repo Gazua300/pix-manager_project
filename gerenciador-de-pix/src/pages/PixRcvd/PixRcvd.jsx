@@ -1,5 +1,4 @@
-import { useEffect, useState, useContext } from 'react'
-import Context from '../../global/Context'
+import { useState, } from 'react'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import { convertDate } from '../../utils/ConvertDate'
@@ -16,7 +15,6 @@ import {
 
 
 export default function PixRcvd(props){
-    const { states, setters } = useContext(Context)
     const [inicio, setInicio] = useState('')
     const [fim, setFim] = useState('')
     const [pix, setPix] = useState([])
@@ -31,19 +29,17 @@ export default function PixRcvd(props){
             fim
         }
         axios.post(`${url}/listpix`, body).then(res=>{
-            console.log(res.data.pix)
+            setPix(res.data.pix)
         }).catch(e=>{
             console.log(e.response.data)
         })
-
-        valorTotal()
     }
 
 
     const valorTotal = ()=>{
         if(pix.length > 0){
             const valores = pix.map(cob=>{
-                return Number(cob.valor.original)
+                return Number(cob.valor)
             })
         
             const resultado = valores.reduce((accumulator, value)=>{
@@ -80,20 +76,26 @@ export default function PixRcvd(props){
                 <Button title='Gerar lista' onPress={consultarPixRecebidos}/>
                 <Button title='limpar' onPress={limpar}/>
             </View>
-            <Text style={{textAlign:'center', fontWeight:'bold', fontSize:18}}>
-                Total: R$ {total}
-            </Text>
+            {pix.length > 0 ? (
+                <View style={{alignItems:'center', marginBottom:10}}>
+                    <Button title='gerar total' onPress={valorTotal}/>
+                </View>
+            ) : null}
+            {total ? (
+                <Text style={{textAlign:'center', fontWeight:'bold', fontSize:18}}>
+                    Total: R$ {total}
+                </Text>
+            ) : null}
             <FlatList
                 data={pix}
-                keyExtractor={pix => pix.txid}
+                keyExtractor={pix => pix.endToEndId}
                 renderItem={({item: pix})=>(
                     <TouchableOpacity style={styles.card}>
                         <Text style={styles.listFontStyle}>
-                            Valor: R$ {pix.valor.original}
+                            Valor: R$ {pix.valor}
                         </Text>
                         <Text style={styles.listFontStyle}>
-                            Cobrança efetuada em: {convertDate(pix.loc.criacao)}{' '}
-                            às {convertHour(pix.loc.criacao)}
+                            Data: {convertDate(pix.horario)} {convertHour(pix.horario)}
                         </Text>
                     </TouchableOpacity>
                 )}/>

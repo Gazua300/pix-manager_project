@@ -1,6 +1,5 @@
-import { useEffect, useState, useContext } from 'react'
+import { useState, useContext } from 'react'
 import Context from '../../global/Context'
-import * as Notifications from 'expo-notifications'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import { convertDate } from '../../utils/ConvertDate'
@@ -18,20 +17,13 @@ import {
 
 
 export default function Charges(props){
-    const { states, setters, requests } = useContext(Context)
+    const { setters } = useContext(Context)
     const [inicio, setInicio] = useState('')
     const [fim, setFim] = useState('')
     const [cobs, setCobs] = useState([])
-    const [usuariosCobs, setUsuariosCobs] = useState([])
     const [searchTime, setSearchTime] = useState('')
-    const [total, setTotal] = useState('')
+    
 
-
-
-
-    useEffect(()=>{
-        // checarUsuarioListaDeCobranca()
-    }, [])
 
     
     const consultarListaDeCobranca = ()=>{
@@ -49,25 +41,7 @@ export default function Charges(props){
         })
         
     }
-
-
-    // const valorTotal = ()=>{
-    //     if(cobs.length > 0){
-    //         const valores = cobs.map(cob=>{
-    //             return Number(cob.valor.original)
-    //         })
-        
-    //         const resultado = valores.reduce((accumulator, value)=>{
-    //             return accumulator + value
-    //         })
-                        
-    //         setTotal(resultado)
-    //     }else{
-    //         setTotal('')
-    //     }
-        
-    // }
-
+    
 
     const consultarCobranca = (id)=>{
         axios.get(`${url}/client/cob/${id}`).then(res=>{
@@ -77,33 +51,11 @@ export default function Charges(props){
             alert(e.response.data)
         })
     }
+
     
     const limpar = ()=>{
         setInicio('')
         setFim('')
-    }
-
-
-    const checarUsuarioListaDeCobranca = ()=>{
-        axios.get(`${url}/client/userlistcob`).then(res=>{
-            setUsuariosCobs(res.data)
-        }).catch(e=>{
-            alert(e.response.data)
-        })
-    }
-
-
-    const testar = ()=>{
-        const subscription = Notifications.addNotificationResponseReceivedListener(res=>{
-            props.navigation.navigate('Carrinho')
-        })
-    }
-
-
-    if(usuariosCobs.length > 0){
-        if(usuariosCobs.length + 1){
-            requests.scheduleNotification('Nova cobrança', 'Um dos clientes acabou de comprar um produto', testar)
-        }
     }
 
 
@@ -136,9 +88,6 @@ export default function Charges(props){
                 <Button title='Gerar lista' onPress={consultarListaDeCobranca}/>                
                 <Button title='limpar' onPress={limpar}/>
             </View>
-            {/* <Text style={{textAlign:'center', fontWeight:'bold', fontSize:18}}>
-                Total: R$ {total}
-            </Text> */}
             <Searchbar style={{
                         marginVertical:20,
                         marginHorizontal:10,

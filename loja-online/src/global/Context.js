@@ -1,6 +1,7 @@
 import { useState, createContext, useEffect } from "react"
 import * as Notifications from 'expo-notifications'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as LocalAuthentication from 'expo-local-authentication'
 import axios from 'axios'
 import { url } from "../constants/url"
 
@@ -33,11 +34,14 @@ console.log('Token do usuário:', expoPushToken)
         registerForNotifications().then(async token=>{
             setExpoPushToken(token)
         })
+
+        atualizarToken()
+        
     }, [])
 
-    useEffect(()=>{
-        (async()=>{
-            const id = await AsyncStorage.getItem('id')
+
+    const atualizarToken = async()=>{
+        const id = await AsyncStorage.getItem('id')
             if(expoPushToken){
                 const body = {
                     expoPushToken
@@ -50,8 +54,12 @@ console.log('Token do usuário:', expoPushToken)
             }else{
                 console.log('ExpoPushToken está null')
             }
-        })()        
-    }, [])
+    }
+
+
+    const autenticacao = async()=>{
+        await LocalAuthentication.authenticateAsync()
+    }
 
 
     const getClients = ()=>{
@@ -128,8 +136,8 @@ console.log('Token do usuário:', expoPushToken)
 
     
     states = { cob, total, items, status }
-    setters = { setCob, setTotal, setItems, somarPreco, setStatus }
-    requests = { cartItems, scheduleNotification, getClients }
+    setters = { setCob, setTotal, setItems, somarPreco, setStatus, autenticacao }
+    requests = { cartItems, scheduleNotification, getClients, atualizarToken }
 
     return(
         <Context.Provider value={{states, setters, requests}}>

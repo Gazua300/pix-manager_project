@@ -1,6 +1,5 @@
 import { useContext, useState } from 'react'
 import Context from '../../global/Context'
-import * as LocalAuthentication from 'expo-local-authentication'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import { convertDate } from '../../utils/ConvertDate'
@@ -8,7 +7,7 @@ import { convertHour } from '../../utils/ConvertDate'
 import { View, Text, Button, StyleSheet, TextInput } from 'react-native'
 
 
-export default function Detail(props){
+export default function PixDetail(props){
     const { states } = useContext(Context)
     const cob = states.cob
     const [mode, setMode] = useState(false)
@@ -22,21 +21,16 @@ export default function Detail(props){
     }
 
 
-    const alterarValor = async(id)=>{
-        const result = await LocalAuthentication.authenticateAsync()
-
-        if(result.success){
-            body = {
-                valor,
-                txid: id
-            }
-            axios.patch(`${url}/editcob`, body).then(res=>{
-                alert(res.data)
-            }).catch(e=>{
-                alert(e.response.data)
-            })
+    const alterarValor = (id)=>{
+        body = {
+            valor,
+            txid: id
         }
-
+        axios.patch(`${url}/editcob`, body).then(res=>{
+            alert(res.data)
+        }).catch(e=>{
+            alert(e.response.data)
+        })
     }
 
 
