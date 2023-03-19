@@ -66,9 +66,11 @@ console.log('Token do usuário:', expoPushToken)
         axios.get(`${url}/clients`).then(async res=>{
             await AsyncStorage.setItem('clientId', res.data[0].id)
         }).catch(e=>{
-            alert(e.response.data)
+            alert(e)
         })
     }
+
+    getClients()
 
 
     const registerForNotifications = async()=>{

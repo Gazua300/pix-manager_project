@@ -13,7 +13,6 @@ import {
     StyleSheet,
     TouchableOpacity,
     Button,
-    Alert,
     Modal,
     Switch
 } from 'react-native'
@@ -30,9 +29,11 @@ export default function Home(props){
     const [showModal, setShowModal] = useState(false)
     const [selecionado, setSelecionado] = useState(false)
     
-console.log({showModal, selecionado})
+
+
 
     const gerarQrCode = async()=>{
+        requests.atualizarToken()
         const result = await LocalAuthentication.authenticateAsync()
 
         if(result.success){
@@ -57,29 +58,11 @@ console.log({showModal, selecionado})
     const verificarBloqueioDeTela = async()=>{
         const hasHardware = await LocalAuthentication.hasHardwareAsync()
         const isEnrolled = await LocalAuthentication.isEnrolledAsync()
-        requests.atualizarToken()
-        
+                
         if(hasHardware && isEnrolled){
-            const result = await LocalAuthentication.authenticateAsync()
-
-            if(result.success){
-                gerarQrCode()
-            }            
+            gerarQrCode()        
         }else{
             selecionado ? gerarQrCode() : setShowModal(true)
-            // Alert.alert(
-            //     'Por motivos de segurança ative o bloqueio de tela!',
-            //     'Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.',
-            //     [
-            //         {
-            //             text:'Cancelar'
-            //         },
-            //         {
-            //             text:'Ok',
-            //             onPress: ()=> gerarQrCode()
-            //         }
-            //     ]
-            // )
         }
     }
 

@@ -11,7 +11,7 @@ export default function Products(props){
     const [valor, setValor] = useState({})
     
 
-  
+  console.log('Oxe')
     
     useEffect(()=>{
         mostrarProdutos()
@@ -55,7 +55,7 @@ export default function Products(props){
             ) : null}              
             <FlatList
                 data={items}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.txid}
                 renderItem={({item: produto})=>(
                     <View style={styles.card}>
                         <Text>{produto.nome}</Text>

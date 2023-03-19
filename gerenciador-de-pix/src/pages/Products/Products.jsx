@@ -4,7 +4,6 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import axios from 'axios'
 import { url } from '../../constants/url'
 import { Searchbar } from 'react-native-paper'
-// import CheckBox from '@react-native-community/checkbox'
 import Refresh from '@expo/vector-icons/SimpleLineIcons'
 import {
     View,
@@ -29,15 +28,19 @@ export default function Products(props){
     const [mode, setMode] = useState(false)
     const [title, setTitle] = useState('inserir produto')
     const [searchWord, setSearchWord] = useState('')
-    const [showModal, setShowModal] = useState(false)
+    const [modalExcluir, setModalExcluir] = useState(false)
+    const [modalInput, setModalInput] = useState(false)
     const [selecionado, setSelecionado] = useState(false) 
+    const [item, setItem] = useState({})
     
 
-  console.log(mode)
+  console.log(selecionado)
+    
     
     useEffect(()=>{
          mostrarProdutos()
          requests.atualizarToken()
+
     }, [])
 
 
@@ -52,11 +55,13 @@ export default function Products(props){
 
 
     const mostrarInput = async()=>{
-        const result = await LocalAuthentication.authenticateAsync()
-
-        if(result.success){
-            mode ? setMode(false) : setMode(true)
-            title === 'inserir produto' ? setTitle('ocultar') : setTitle('inserir produto')
+        if(!mode){
+            const result = await LocalAuthentication.authenticateAsync()
+    
+            if(result.success){
+                mode ? setMode(false) : setMode(true)
+                title === 'inserir produto' ? setTitle('ocultar') : setTitle('inserir produto')
+            }
         }
     }
 
@@ -69,8 +74,7 @@ export default function Products(props){
             if(hasHardware && isEnrolled){
                 mostrarInput()
             }else{
-                // setShowModal(true)
-                mostrarInput()
+                setModalInput(true)
             } 
         }          
 
@@ -78,59 +82,49 @@ export default function Products(props){
 
 
     const inserirProduto = ()=>{
-        if(!preco || !nome){
-            alert('Preencha os campos')
-        }else{
-            const body = {
-                preco,
-                nome            
-            }
-            axios.post(`${url}/products`, body).then(()=>{
-                mostrarProdutos()
-                notificarInsercaoDeProduto()
-                limpar()
-            }).catch(e=>{
-                alert(e.response.data)
-            })
+        const body = {
+            preco,
+            nome            
         }
+        axios.post(`${url}/products`, body).then(()=>{
+            mostrarProdutos()
+            notificarInsercaoDeProduto()
+            limpar()
+        }).catch(e=>{
+            alert(e.response.data)
+        })
         
     }
 
 
     const deletarProduto = async()=>{
-        const result = await LocalAuthentication.authenticateAsync()
-
-        if(result.success){
-            axios.delete(`${url}/products/${produto.id}`).then(()=>{
-                mostrarProdutos()
-                notificarExclusaoDeProduto(produto)
-            }).catch(e=>{
-                alert(e.response.data)
-            })
+        if(item){
+            const result = await LocalAuthentication.authenticateAsync()
+    
+            if(result.success){
+                axios.delete(`${url}/products/${item.id}`).then(()=>{
+                    mostrarProdutos()
+                    notificarExclusaoDeProduto(item)
+                }).catch(e=>{
+                    alert(e.response.data)
+                })
+            }            
         }
     }
         
 
-    const verificarBloqueioDeTela = async(produto)=>{
+    const bloqueioDeTelaExclusao = async(produto)=>{
         const hasHardware = await LocalAuthentication.hasHardwareAsync()
         const isEnrolled = await LocalAuthentication.isEnrolledAsync()
 
         if(hasHardware && isEnrolled){  
-            deletarProduto()
+            deletarProduto(produto)
         }else{
-            Alert.alert(
-                'Por motivos de segurança ative o bloqueio de tela!',
-                'Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.',
-                [
-                    {
-                        text:'Cancelar',
-                    },
-                    {
-                        text:'Ok',
-                        onPress: ()=> deletarProduto(produto)
-                    }
-                ]
-            )
+            if(selecionado){
+                deletarProduto(produto)
+            }
+            setItem(produto)
+            setModalExcluir(true)
         }
         
     }
@@ -146,7 +140,7 @@ export default function Products(props){
                 },
                 {
                     text:'Ok',
-                    onPress: ()=> verificarBloqueioDeTela(produto)
+                    onPress: ()=> bloqueioDeTelaExclusao(produto)
                 }
             ]
         )
@@ -196,7 +190,14 @@ export default function Products(props){
     return(
         <View>
             <View style={{marginHorizontal:'30%', marginTop:'10%'}}>
-                <Button title={title} onPress={confirmarMostrarInput}/>
+                <Button title={title} onPress={()=>{
+                    if(mode){
+                        setMode(false)
+                        setTitle('inserir produto')
+                    }else{
+                        confirmarMostrarInput()
+                    }
+                }}/>
             </View>   
             {mode ? (
                 <>
@@ -217,7 +218,6 @@ export default function Products(props){
                 </View>
                 </>
             ) : null}         
-            
             <Searchbar style={{
                         backgroundColor:'lightgray',
                         marginHorizontal: 10,
@@ -225,64 +225,121 @@ export default function Products(props){
                     }}
                 onChangeText={setSearchWord}
                 value={searchWord}
-                placeholder='Buscar'/>
+                placeholder='Nome do produto'/>
             
-            
-            <Modal
-                animationType='slide'
-                visible={showModal}
-                transparent={true}
-                onRequestClose={()=> setShowModal(false)}>
-                <View style={{
-                    flex:1,
-                    alignItems:'center',
-                    justifyContent:'center',
-                    backgroundColor:'rgba(0, 0, 0, 0.5)'
-                    }}>
-                    <View style={{ backgroundColor:'white', width:'80%', height:'40%', padding:20 }}>
-                        <Text style={{fontSize:17, fontWeight:'bold'}}>
-                            Por motivos de segurança ative o bloqueio de tela!
-                        </Text>
-                        <Text style={{fontSize:15, marginVertical:20}}>
-                            Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.
-                        </Text>
-
-                        <View style={{flexDirection:'row', alignItems:'center'}}>
-                            <Switch onValueChange={setSelecionado} value={selecionado}/>
-                            <Text>
-                                Não mostrar{'\n'}mais essa mensagem
+{/*==========ALERTA DE BLOQUEIO DE TELA PARA MOSTRAR INPUT============== */}
+            {!selecionado ? (
+                <Modal
+                    animationType='slide'
+                    visible={modalInput}
+                    transparent={true}
+                    onRequestClose={()=> setModalInput(false)}>
+                    <View style={{
+                        flex:1,
+                        alignItems:'center',
+                        justifyContent:'center',
+                        backgroundColor:'rgba(0, 0, 0, 0.5)'
+                        }}>
+                        <View style={{ backgroundColor:'white', width:'80%', height:'40%', padding:20 }}>
+                            <Text style={{fontSize:17, fontWeight:'bold'}}>
+                                Por motivos de segurança ative o bloqueio de tela!
                             </Text>
-                        </View>
-                        
-                        <View style={{
-                            marginTop:'10%',
-                            marginLeft:90,
-                            flexDirection:'row',
-                            alignItems:'center'
-                            }}>
-                            <TouchableOpacity>
-                                <Text style={{color:'blue', fontSize:18, marginLeft:50}}>
-                                    Cancelar
+                            <Text style={{fontSize:15, marginVertical:20}}>
+                                Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.
+                            </Text>
+
+                            <View style={{flexDirection:'row', alignItems:'center'}}>
+                                <Switch onValueChange={setSelecionado} value={selecionado}/>
+                                <Text>
+                                    Não mostrar{'\n'}mais essa mensagem
                                 </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={()=>{ 
-                                setShowModal(false)
-                                mostrarInput()
-                            }}>
-                                <Text style={{color:'blue', fontSize:18, marginLeft:50}}>
-                                    Ok
-                                </Text>
-                            </TouchableOpacity>
+                            </View>
+                            
+                            <View style={{
+                                marginTop:'10%',
+                                marginLeft:90,
+                                flexDirection:'row',
+                                alignItems:'center',
+                                justifyContent:'space-around'
+
+                                }}>
+                                <TouchableOpacity onPress={()=> setModalInput(false)}>
+                                    <Text style={{color:'blue', fontSize:18}}>
+                                        Cancelar
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={()=>{
+                                    setModalInput(false)
+                                    mostrarInput()
+                                }}>
+                                    <Text style={{color:'blue', fontSize:18}}>
+                                        Ok
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
+             ) : null}
 
+{/*==============ALERTA DE BLOQUEIO DE TELA PARA EXCLUIR PRODUTO=================*/}
+            {!selecionado ? (
+                <Modal
+                    animationType='slide'
+                    visible={modalExcluir}
+                    transparent={true}
+                    onRequestClose={()=> setModalExcluir(false)}>
+                    <View style={{
+                        flex:1,
+                        alignItems:'center',
+                        justifyContent:'center',
+                        backgroundColor:'rgba(0, 0, 0, 0.5)'
+                        }}>
+                        <View style={{ backgroundColor:'white', width:'80%', height:'40%', padding:20 }}>
+                            <Text style={{fontSize:17, fontWeight:'bold'}}>
+                                Por motivos de segurança ative o bloqueio de tela!
+                            </Text>
+                            <Text style={{fontSize:15, marginVertical:20}}>
+                                Ative o bloqueio de tela nas configurações ou pode seguir por sua conta e risco.
+                            </Text>
 
+                            <View style={{flexDirection:'row', alignItems:'center'}}>
+                                <Switch onValueChange={setSelecionado} value={selecionado}/>
+                                <Text>
+                                    Não mostrar{'\n'}mais essa mensagem
+                                </Text>
+                            </View>
+                            
+                            <View style={{
+                                marginTop:'10%',
+                                marginLeft:90,
+                                flexDirection:'row',
+                                alignItems:'center',
+                                justifyContent:'space-around'
+
+                                }}>
+                                <TouchableOpacity onPress={()=> setModalExcluir(false)}>
+                                    <Text style={{color:'blue', fontSize:18}}>
+                                        Cancelar
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={()=>{
+                                    setModalExcluir(false)
+                                    deletarProduto()
+                                }}>
+                                    <Text style={{color:'blue', fontSize:18}}>
+                                        Ok
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            ) : null}
             <View style={{margin:5, marginBottom:35}}>
                 <View style={{alignItems:'center'}}>                    
                     <TouchableOpacity style={styles.refreshBtn}
-                        onPress={mostrarProdutos()}>
+                        onPress={mostrarProdutos}>
                         <Refresh name='refresh' size={20} color='whitesmoke'/>
                     </TouchableOpacity>
                 </View>
